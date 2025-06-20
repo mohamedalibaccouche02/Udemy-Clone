@@ -8,10 +8,10 @@ import toast from "react-hot-toast";
 
 import { Trash } from "lucide-react";
 
-import { useConfettiStore } from "@/hooks/use-confetti-store";
+import { useConfettiStore } from "src/hooks/use-confetti-store";
 
 import { Button } from "src/components/ui/button";
-import { ConfirmModal } from "@/components/modals/confirm-modal";
+import { ConfirmModal } from "src/components/modals/confirm-modal";
 
 interface ActionsProps {
     disabled: boolean;

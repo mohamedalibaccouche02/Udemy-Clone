@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ToastProvider } from "src/components/providers/toaster-provider";
+import { ConfettiProvider } from "~/components/providers/confetti-provider";
 
 export const metadata: Metadata = {
   title: "UDEMY",
@@ -22,6 +23,7 @@ export default function RootLayout({
     <ClerkProvider> 
     <html lang="en" className={`${geist.variable}`}>
       <body>
+        <ConfettiProvider />
         <ToastProvider />
         {children}
         </body>
