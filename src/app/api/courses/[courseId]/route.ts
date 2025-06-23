@@ -4,7 +4,8 @@ import Mux from "@mux/mux-node";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "src/server/db";
-import { courses, chapters, muxData } from "src/server/db/schema";
+import { courses} from "src/server/db/schema";
+import { isTeacher } from "src/lib/teacher";
 
 const mux = new Mux({
   tokenId: process.env.MUX_TOKEN_ID!,
@@ -17,7 +18,8 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth();
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    if (!userId || !isTeacher(userId))
+       return new NextResponse("Unauthorized", { status: 401 });
 
     const { courseId } = params;
     const values = await req.json();
@@ -43,7 +45,8 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await auth();
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    if (!userId || !isTeacher(userId)) 
+      return new NextResponse("Unauthorized", { status: 401 });
 
     const { courseId } = params;
 

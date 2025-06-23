@@ -3,6 +3,8 @@ import { attachments, courses } from "~/server/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { isTeacher } from "src/lib/teacher";
+
 
 export async function POST(
   req: Request,
@@ -13,7 +15,7 @@ export async function POST(
     const { courseId } = params;
     const { url } = await req.json();
 
-    if (!userId) {
+    if (!userId || !isTeacher(userId)) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 

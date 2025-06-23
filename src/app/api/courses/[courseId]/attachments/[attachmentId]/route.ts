@@ -3,6 +3,7 @@ import { attachments, courses } from "~/server/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { isTeacher } from "src/lib/teacher";
 
 export async function DELETE(
   req: Request,
@@ -12,7 +13,7 @@ export async function DELETE(
     const { userId } = await auth();
     const { courseId, attachmentId } = params;
 
-    if (!userId) {
+    if (!userId || !isTeacher(userId)) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 

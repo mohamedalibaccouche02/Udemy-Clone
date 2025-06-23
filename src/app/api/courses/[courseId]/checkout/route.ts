@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import { eq, and } from "drizzle-orm";
 
 import { db } from "src/server/db";
@@ -76,6 +76,11 @@ export async function POST(
       customerRecord = inserted[0];
     }
 
+    // Ensure customerRecord is defined
+    if (!customerRecord) {
+      return new NextResponse("Stripe customer not found", { status: 500 });
+    }
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerRecord.stripeCustomerId,
@@ -85,7 +90,7 @@ export async function POST(
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/courses/${course.id}?canceled=1`,
       metadata: {
         courseId: course.id,
-        userId: user.id,
+        userId: user.id, 
       },
     });
 
