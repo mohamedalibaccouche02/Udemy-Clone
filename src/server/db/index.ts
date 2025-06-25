@@ -17,6 +17,8 @@ if (env.NODE_ENV !== "production") globalForDb.conn = conn;
 export const db = drizzle(conn, { schema });
 
 // Base types
+export type User = InferSelectModel<typeof schema.users>;
+export type NewUser = InferInsertModel<typeof schema.users>;
 export type Course = InferSelectModel<typeof schema.courses>;
 export type NewCourse = InferInsertModel<typeof schema.courses>;
 export type Category = InferSelectModel<typeof schema.categories>;
@@ -36,6 +38,7 @@ export type NewStripeCustomer = InferInsertModel<typeof schema.stripeCustomers>;
 
 // Relational types
 export type CourseWithRelations = Course & {
+  user: User;
   category: Category | null;
   chapters: Chapter[];
   attachments: Attachment[];
@@ -56,9 +59,13 @@ export type MuxDataWithRelations = MuxData & {
   chapter: Chapter;
 };
 export type UserProgressWithRelations = UserProgress & {
+  user: User;
   chapter: Chapter;
 };
 export type PurchaseWithRelations = Purchase & {
+  user: User;
   course: Course;
 };
-export type StripeCustomerWithRelations = StripeCustomer;
+export type StripeCustomerWithRelations = StripeCustomer & {
+  user: User;
+};

@@ -1,8 +1,30 @@
 import { sql } from "drizzle-orm";
-import { index, pgTableCreator, uuid, varchar, text, real, boolean, integer, timestamp, unique} from "drizzle-orm/pg-core";
+import { index, pgTableCreator, uuid, varchar, text, real, boolean, integer, timestamp, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
+
 // Multi-project schema prefix
 export const createTable = pgTableCreator((name) => `udemyclone_${name}`);
+
+// Users table
+export const users = createTable(
+  "user",
+  {
+    id: varchar("id", { length: 255 }).primaryKey().notNull(), // Clerk user ID
+    email: varchar("email", { length: 255 }).notNull().unique(),
+    role: varchar("role", { length: 50 }).notNull().default("student"), // student, teacher, admin
+    createdAt: timestamp("created_at", { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(() => new Date()),
+  },
+  (table) => [index("user_email_idx").on(table.email)],
+);
+
+export const usersRelations = relations(users, ({ many }) => ({
+  courses: many(courses, { relationName: "user_courses" }),
+  userProgress: many(userProgress, { relationName: "user_progress" }),
+  purchases: many(purchases, { relationName: "user_purchases" }),
+  stripeCustomers: many(stripeCustomers, { relationName: "user_stripe_customers" }),
+}));
 
 export const courses = createTable(
   "course",
@@ -25,6 +47,11 @@ export const courses = createTable(
 );
 
 export const coursesRelations = relations(courses, ({ one, many }) => ({
+  user: one(users, {
+    fields: [courses.userId],
+    references: [users.id],
+    relationName: "user_courses",
+  }),
   category: one(categories, {
     fields: [courses.categoryId],
     references: [categories.id],
@@ -126,6 +153,11 @@ export const userProgress = createTable(
 );
 
 export const userProgressRelations = relations(userProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [userProgress.userId],
+    references: [users.id],
+    relationName: "user_progress",
+  }),
   chapter: one(chapters, {
     fields: [userProgress.chapterId],
     references: [chapters.id],
@@ -148,6 +180,11 @@ export const purchases = createTable(
 );
 
 export const purchasesRelations = relations(purchases, ({ one }) => ({
+  user: one(users, {
+    fields: [purchases.userId],
+    references: [users.id],
+    relationName: "user_purchases",
+  }),
   course: one(courses, {
     fields: [purchases.courseId],
     references: [courses.id],
@@ -165,4 +202,64 @@ export const stripeCustomers = createTable(
   },
 );
 
-export const stripeCustomersRelations = relations(stripeCustomers, () => ({}));
+export const stripeCustomersRelations = relations(stripeCustomers, ({ one }) => ({
+  user: one(users, {
+    fields: [stripeCustomers.userId],
+    references: [users.id],
+    relationName: "user_stripe_customers",
+  }),
+}));
+
+// Base types
+export type User = InferSelectModel<typeof users>;
+export type NewUser = InferInsertModel<typeof users>;
+export type Course = InferSelectModel<typeof courses>;
+export type NewCourse = InferInsertModel<typeof courses>;
+export type Category = InferSelectModel<typeof categories>;
+export type NewCategory = InferInsertModel<typeof categories>;
+export type Attachment = InferSelectModel<typeof attachments>;
+export type NewAttachment = InferInsertModel<typeof attachments>;
+export type Chapter = InferSelectModel<typeof chapters>;
+export type NewChapter = InferInsertModel<typeof chapters>;
+export type MuxData = InferSelectModel<typeof muxData>;
+export type NewMuxData = InferInsertModel<typeof muxData>;
+export type UserProgress = InferSelectModel<typeof userProgress>;
+export type NewUserProgress = InferInsertModel<typeof userProgress>;
+export type Purchase = InferSelectModel<typeof purchases>;
+export type NewPurchase = InferInsertModel<typeof purchases>;
+export type StripeCustomer = InferSelectModel<typeof stripeCustomers>;
+export type NewStripeCustomer = InferInsertModel<typeof stripeCustomers>;
+
+// Relational types
+export type CourseWithRelations = Course & {
+  user: User;
+  category: Category | null;
+  chapters: Chapter[];
+  attachments: Attachment[];
+  purchases: Purchase[];
+};
+export type CategoryWithRelations = Category & {
+  courses: Course[];
+};
+export type AttachmentWithRelations = Attachment & {
+  course: Course;
+};
+export type ChapterWithRelations = Chapter & {
+  course: Course;
+  muxData: MuxData | null;
+  userProgress: UserProgress[];
+};
+export type MuxDataWithRelations = MuxData & {
+  chapter: Chapter;
+};
+export type UserProgressWithRelations = UserProgress & {
+  user: User;
+  chapter: Chapter;
+};
+export type PurchaseWithRelations = Purchase & {
+  user: User;
+  course: Course;
+};
+export type StripeCustomerWithRelations = StripeCustomer & {
+  user: User;
+};

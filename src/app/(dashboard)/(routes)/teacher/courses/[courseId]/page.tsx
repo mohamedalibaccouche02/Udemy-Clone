@@ -27,14 +27,16 @@ import { ChaptersForm } from "./_components/chapters-form";
 import { Banner } from "~/components/banner";
 import { Actions } from "./_components/actions";
 
-const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
+const CourseIdPage = async ({ params }: { params: Promise<{ courseId: string }> }) => {
+
+  const { courseId } = await params;
   const { userId } = await auth();
   if (!userId) return redirect("/");
 
   const course = await db
     .select()
     .from(courses)
-    .where(and(eq(courses.id, params.courseId), eq(courses.userId, userId)))
+    .where(and(eq(courses.id, courseId), eq(courses.userId, userId)))
     .then((res) => res[0]);
 
   if (!course) return redirect("/");
@@ -85,7 +87,7 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
                     </div>
                     <Actions
                         disabled={!isComplete}
-                        courseId={params.courseId}
+                        courseId={courseId}
                         isPublished={course.isPublished}
                     />
                 </div>
