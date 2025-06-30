@@ -19,7 +19,6 @@ const teacherRoutes = [
 
 const adminRoutes = [
   { icon: UsersRound, label: "Users", href: "/admin/users" },
-  { icon: List, label: "Courses", href: "/admin/courses" },
   { icon: BarChart, label: "Analytics", href: "/admin/analytics" },
 ];
 
