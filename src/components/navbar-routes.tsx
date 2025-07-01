@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -59,7 +59,16 @@ const NavbarRoutes = () => {
             <Button size="sm" variant="ghost">Teacher mode</Button>
           </Link>
         ) : null}
-        <UserButton afterSignOutUrl="/" />
+        <UserButton
+          afterSignOutUrl="/sign-in"
+          appearance={{
+            elements: {
+              userButtonPopoverFooter: {
+                display: 'none', 
+              },
+            },
+          }}
+        />
       </div>
     </>
   );
